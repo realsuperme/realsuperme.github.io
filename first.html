@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幸运数字页面</title>
+  <style>
+    main {
+      height: 65%;
+      background-color: antiquewhite;
+    }
+
+    header {
+      height: 20%;
+      background-color: aqua;
+    }
+
+    footer {
+      height: 10%;
+      background-color: cadetblue;
+    }
+  </style>
+</head>
+
+<body>
+  <header>页面执行中...</header>
+  <main>你的幸运数: 正在计算...</main>
+  <footer>点击关闭此弹窗</footer>
+
+  <script>
+    // 设置页面高度
+    document.body.style.height = innerHeight - 18 + 'px';
+
+    // 生成随机幸运数
+    let luckN = Math.floor(Math.random() * 100);
+    let mainDom = document.querySelector('main');
+    mainDom.textContent = '你的幸运数: ' + luckN;
+    console.log("幸运数是: " + luckN);
+
+    // 记录脚本开始时间
+    let bigBang = new Date();
+
+    // 模拟CPU计算
+    let timer = new Date();
+    for (let i = 1; i <= 1e8; i++) { }
+    console.log("CPU从1数到1亿耗时: " + (new Date() - timer) + " ms!");
+
+    // 显示页面执行完成时间
+    let headerDom = document.querySelector('header');
+    headerDom.textContent = "执行完毕，费时：" + (new Date() - bigbang) + 'ms'
+  </script>
+</body>
+
+</html>
