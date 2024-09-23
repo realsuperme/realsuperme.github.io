@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cet6</title>
+  <style>
+    header {
+      text-align: center;
+      font-size: 30px;
+      font-family: 宋体;
+      background-color: cornsilk;
+    }
+
+    main {
+      text-align: center;
+      background-color: burlywood;
+    }
+
+    p {
+      font-size: 30px;
+    }
+
+    button {
+      font-size: 40px;
+      margin: 30px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 30px;
+      background-color: aquamarine;
+    }
+  </style>
+</head>
+
+<body>
+  <input type="file" id="fileInput" style="display: none;">
+  <header>
+    cet6随机单词记忆
+  </header>
+  <main>
+    <p id="english">abandon</p>
+    <p id="pron">/ə'bændən/</p>
+    <p id="chinese">vt.离弃,丢弃;遗弃,抛弃;放弃</p>
+    <button id="load">载入单词</button><button id="forone">随机单词</button>
+  </main>
+  <footer>
+    我嘞个6级啊
+  </footer>
+</body>
+<script>
+  let cet6string = "";
+  function select(selector) {
+    let dom = document.querySelector(selector);
+    return dom;
+  }
+  let load = select("button#load"); let forone = select("button#forone");
+  load.onclick = function () {
+    fetch("./cet6.txt")
+      .then(res => res.text())
+      .then(txt => cet6string = txt);
+  }
+  forone.onclick = function () {
+    if (cet6string.length == 0) {
+      let a = "未载入单词";
+      select('footer').textContent = a;
+    }
+    else {
+      let arr = cet6string.split('\r\n');
+      let rand = Math.floor(Math.random() * arr.length);
+      let str = arr[rand];
+      console.log(str);
+      let begin = str.indexOf('\t');
+      let end = str.lastIndexOf('\t');
+      let str1 = select('p#english'); let str2 = select('p#pron'); let str3 = select('p#chinese');
+      str1.textContent = str.slice(0, begin);
+      str2.textContent = str.slice(begin + 1, end);
+      str3.textContent = str.slice(end + 1);
+    }
+  }
+</script>
+
+</html>
