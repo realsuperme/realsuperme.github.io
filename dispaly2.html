@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cet6</title>
+    <style>
+        header {
+            text-align: center;
+            font-size: 30px;
+            font-family: 宋体;
+            background-color: cornsilk;
+        }
+
+        main {
+            text-align: center;
+            background-color: burlywood;
+        }
+
+        p {
+            font-size: 30px;
+        }
+
+        button {
+            font-size: 40px;
+            margin: 30px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 30px;
+            background-color: aquamarine;
+        }
+    </style>
+</head>
+
+<body>
+<input type="file" id="fileInput" style="display: none;">
+<header>
+    cet6随机单词记忆
+</header>
+<main>
+    <p id="english">abandon</p>
+    <p id="pron">/ə'bændən/</p>
+    <p id="chinese">vt.离弃,丢弃;遗弃,抛弃;放弃</p>
+    <button id="first">第一个单词</button>
+    <button id="next">下一个单词</button>
+    <button id="last">最后一个单词</button>
+    <button id="random">随机单词</button>
+</main>
+<footer>
+    我嘞个6级啊
+</footer>
+
+<script>
+    // Model
+    class WordModel {
+        constructor() {
+            this.wordsArray = [];
+            this.currentIndex = 0;
+        }
+
+        loadWords(text) {
+            this.wordsArray = text.split('\r\n');
+            this.currentIndex = 0; // Reset to first word
+        }
+
+        getCurrentWord() {
+            return this.wordsArray[this.currentIndex];
+        }
+
+        setCurrentIndex(index) {
+            if (index >= 0 && index < this.wordsArray.length) {
+                this.currentIndex = index;
+            }
+        }
+
+        getFirstWord() {
+            this.currentIndex = 0;
+            return this.getCurrentWord();
+        }
+
+        getNextWord() {
+            if (this.currentIndex < this.wordsArray.length - 1) {
+                this.currentIndex++;
+            }
+            return this.getCurrentWord();
+        }
+
+        getLastWord() {
+            this.currentIndex = this.wordsArray.length - 1;
+            return this.getCurrentWord();
+        }
+
+        getRandomWord() {
+            this.currentIndex = Math.floor(Math.random() * this.wordsArray.length);
+            return this.getCurrentWord();
+        }
+    }
+
+    // UI
+    class WordUI {
+        constructor() {
+            this.englishElement = document.querySelector('p#english');
+            this.pronElement = document.querySelector('p#pron');
+            this.chineseElement = document.querySelector('p#chinese');
+            this.footerElement = document.querySelector('footer');
+        }
+
+        displayWord(word) {
+            if (!word) {
+                this.footerElement.textContent = "没有更多单词";
+                return;
+            }
+            const [english, pron, chinese] = word.split('\t');
+            this.englishElement.textContent = english;
+            this.pronElement.textContent = pron;
+            this.chineseElement.textContent = chinese;
+        }
+
+        displayError(message) {
+            this.footerElement.textContent = message;
+        }
+    }
+
+    // Controller
+    class WordController {
+        constructor(model, ui) {
+            this.model = model;
+            this.ui = ui;
+            this.init();
+        }
+
+        init() {
+            this.loadWords();
+            this.setupEventListeners();
+        }
+
+        loadWords() {
+            fetch("./cet6.txt")
+                .then(res => res.text())
+                .then(text => {
+                    this.model.loadWords(text);
+                    this.ui.displayWord(this.model.getCurrentWord());
+                })
+                .catch(err => {
+                    console.error("加载单词失败:", err);
+                    this.ui.displayError("未能加载单词");
+                });
+        }
+
+        setupEventListeners() {
+            document.querySelector("#first").onclick = () => {
+                this.ui.displayWord(this.model.getFirstWord());
+            };
+
+            document.querySelector("#next").onclick = () => {
+                this.ui.displayWord(this.model.getNextWord());
+            };
+
+            document.querySelector("#last").onclick = () => {
+                this.ui.displayWord(this.model.getLastWord());
+            };
+
+            document.querySelector("#random").onclick = () => {
+                this.ui.displayWord(this.model.getRandomWord());
+            };
+        }
+    }
+
+    // 实例化模型、视图和控制器
+    const wordModel = new WordModel();
+    const wordUI = new WordUI();
+    const wordController = new WordController(wordModel, wordUI);
+</script>
+</body>
+
+</html>
