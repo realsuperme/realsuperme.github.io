@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cet6</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 宋体;
+            background-color: cornsilk;
+        }
+
+        header {
+            text-align: center;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        main {
+            text-align: center;
+            background-color: burlywood;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            font-size: 30px;
+        }
+
+        button {
+            font-size: 20px;
+            margin: 10px;
+            padding: 10px 20px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 30px;
+            background-color: aquamarine;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    cet6随机单词记忆
+</header>
+<main>
+    <div id="authForm">
+        <h2 id="formTitle">注册</h2>
+        <input type="text" id="username" placeholder="用户名" />
+        <input type="password" id="password" placeholder="密码" />
+        <button id="authButton">注册</button>
+        <p id="authMessage"></p>
+        <button id="toggleForm">切换到登录</button>
+    </div>
+    <div id="wordSection" class="hidden">
+        <p id="english">abandon</p>
+        <p id="pron">/ə'bændən/</p>
+        <p id="chinese">vt.离弃,丢弃;遗弃,抛弃;放弃</p>
+        <button id="first">第一个单词</button>
+        <button id="next">下一个单词</button>
+        <button id="last">最后一个单词</button>
+        <button id="random">随机单词</button>
+    </div>
+</main>
+<footer>
+    我嘞个6级啊
+</footer>
+
+<script>
+    // Model
+    class WordModel {
+        constructor() {
+            this.wordsArray = [];
+            this.currentIndex = 0;
+        }
+
+        loadWords(text) {
+            this.wordsArray = text.split('\r\n');
+            this.currentIndex = 0; // Reset to first word
+        }
+
+        getCurrentWord() {
+            return this.wordsArray[this.currentIndex];
+        }
+
+        setCurrentIndex(index) {
+            if (index >= 0 && index < this.wordsArray.length) {
+                this.currentIndex = index;
+            }
+        }
+
+        getFirstWord() {
+            this.currentIndex = 0;
+            return this.getCurrentWord();
+        }
+
+        getNextWord() {
+            if (this.currentIndex < this.wordsArray.length - 1) {
+                this.currentIndex++;
+            }
+            return this.getCurrentWord();
+        }
+
+        getLastWord() {
+            this.currentIndex = this.wordsArray.length - 1;
+            return this.getCurrentWord();
+        }
+
+        getRandomWord() {
+            this.currentIndex = Math.floor(Math.random() * this.wordsArray.length);
+            return this.getCurrentWord();
+        }
+    }
+
+    // UI
+    class WordUI {
+        constructor() {
+            this.englishElement = document.querySelector('p#english');
+            this.pronElement = document.querySelector('p#pron');
+            this.chineseElement = document.querySelector('p#chinese');
+            this.footerElement = document.querySelector('footer');
+        }
+
+        displayWord(word) {
+            if (!word) {
+                this.footerElement.textContent = "没有更多单词";
+                return;
+            }
+            const [english, pron, chinese] = word.split('\t');
+            this.englishElement.textContent = english;
+            this.pronElement.textContent = pron;
+            this.chineseElement.textContent = chinese;
+        }
+
+        displayError(message) {
+            this.footerElement.textContent = message;
+        }
+    }
+
+    // Controller
+    class WordController {
+        constructor(model, ui) {
+            this.model = model;
+            this.ui = ui;
+            this.init();
+        }
+
+        async init() {
+            await this.loadWords();
+            this.setupEventListeners();
+        }
+
+        async loadWords() {
+            try {
+                const responses = await Promise.all([
+                    fetch("./cet6.txt"),
+                    fetch("./cet6.txt"),
+                    fetch("./cet6.txt")
+                ]);
+
+                const texts = await Promise.all(responses.map(res => res.text()));
+                texts.forEach(text => this.model.loadWords(text));
+                this.ui.displayWord(this.model.getCurrentWord());
+            } catch (err) {
+                console.error("加载单词失败:", err);
+                this.ui.displayError("未能加载单词");
+            }
+        }
+
+        setupEventListeners() {
+            document.querySelector("#first").onclick = () => {
+                this.ui.displayWord(this.model.getFirstWord());
+            };
+
+            document.querySelector("#next").onclick = () => {
+                this.ui.displayWord(this.model.getNextWord());
+            };
+
+            document.querySelector("#last").onclick = () => {
+                this.ui.displayWord(this.model.getLastWord());
+            };
+
+            document.querySelector("#random").onclick = () => {
+                this.ui.displayWord(this.model.getRandomWord());
+            };
+        }
+    }
+
+    // 注册和登录功能
+    function toggleForm() {
+        const formTitle = document.getElementById('formTitle');
+        const authButton = document.getElementById('authButton');
+        const toggleButton = document.getElementById('toggleForm');
+
+        if (formTitle.textContent === '注册') {
+            formTitle.textContent = '登录';
+            authButton.textContent = '登录';
+            toggleButton.textContent = '切换到注册';
+        } else {
+            formTitle.textContent = '注册';
+            authButton.textContent = '注册';
+            toggleButton.textContent = '切换到登录';
+        }
+        document.getElementById('authMessage').textContent = ''; // 清空消息
+    }
+
+    function authenticate() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const formTitle = document.getElementById('formTitle').textContent;
+
+        if (formTitle === '注册') {
+            if (username && password) {
+                localStorage.setItem(username, password);
+                document.getElementById('authMessage').textContent = '注册成功！请登录。';
+            } else {
+                document.getElementById('authMessage').textContent = '请填写用户名和密码。';
+            }
+        } else { // 登录
+            if (localStorage.getItem(username) === password) {
+                document.getElementById('authMessage').textContent = '登录成功！';
+                document.getElementById('authForm').classList.add('hidden');
+                document.getElementById('wordSection').classList.remove('hidden');
+                const wordModel = new WordModel();
+                const wordUI = new WordUI();
+                const wordController = new WordController(wordModel, wordUI);
+            } else {
+                document.getElementById('authMessage').textContent = '用户名或密码错误。';
+            }
+        }
+    }
+
+    // 页面加载时设置事件监听
+    window.onload = function() {
+        document.getElementById('authButton').onclick = authenticate;
+        document.getElementById('toggleForm').onclick = toggleForm;
+    };
+</script>
+</body>
+
+</html>
